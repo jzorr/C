@@ -1,0 +1,1 @@
+cmd_/home/zac/Desktop/OrrLKM/OrrLKM.ko := ld -r -m elf_x86_64 -z max-page-size=0x200000 -T ./scripts/module-common.lds --build-id  -o /home/zac/Desktop/OrrLKM/OrrLKM.ko /home/zac/Desktop/OrrLKM/OrrLKM.o /home/zac/Desktop/OrrLKM/OrrLKM.mod.o ;  true
