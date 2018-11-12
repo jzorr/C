@@ -15,13 +15,17 @@ struct job_node; //defined in LoadBalancer
 /**
 * Initializes the host environment.
 */
-void host_init();
+void host_init(){
+    //TODO
+}
 
 /**
 * Shuts down the host environment. Ensures any outstanding batches have
 * completed.
 */
-void host_shutdown();
+void host_shutdown(){
+    //TODO
+}
 
 /**
 * Creates a new server instance (i.e., thread) to handle processing the items
@@ -31,4 +35,7 @@ void host_shutdown();
 *
 * @param job_batch_list A list containing the jobs in a batch to process.
 */
-void host_request_instance(struct job_node* batch);
+void host_request_instance(struct job_node* batch){
+    printf("LoadBalancer: Received batch and spinning up new instance.\n");
+    
+}

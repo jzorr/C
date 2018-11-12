@@ -22,13 +22,24 @@ struct job_node {
 /**
  * Initializes the load balancer. Takes batch size as parameter.
  */
-void balancer_init(int batch_size);
+void balancer_init(int batch_size){
+    //TODO
+    pthread_t thr;
+    size_t i = 0;
+    for(i = 0; i < batch_size; i++){
+        pthread_create(&thr, NULL, balancer_set_batch_size(batch_size), NULL);
+    }
+    
+    
+}
 
 /**
  * Shuts down the load balancer. Ensures any outstanding batches have
  * completed.
  */
-void balancer_shutdown();
+void balancer_shutdown(){
+    //TODO
+}
 
 /**
  * Adds a job to the load balancer. If enough jobs have been added to fill a
@@ -39,7 +50,19 @@ void balancer_shutdown();
  * @param data the data the user wants to process.
  * @param data_return a pointer to a location to store the result of processing.
  */
-void balancer_add_job(int user_id, int data, int* data_return);
+void balancer_add_job(int user_id, int data, int* data_return){
+    //TODO
+    
+    //print the job and what it is requesting
+    printf("LoadBalancer: Received new job from user #%d to process data = #%d and store it at %p.\n". user_id, data, data_return);
+    
+    //create new job_node for the linked list
+    job_node job;
+    job.user_id = user_id;
+    job.data = data;
+    job.data_result = data_return; 
+    
+}
 
 /**
  * Sets the size of the batch. That is, how many jobs much be collected before a
@@ -47,6 +70,9 @@ void balancer_add_job(int user_id, int data, int* data_return);
  * 
  * @param size the new batch size.
  */
-void balancer_set_batch_size(int size);
+void balancer_set_batch_size(int size){
+    //TODO
+    
+}
 
 

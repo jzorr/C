@@ -21,14 +21,14 @@ void* simulate_user_request(void* user_id);
  * @return Zero.
  */
 int main() {
-	int number_of_requests = 10;
+    int number_of_requests = 10;
     int batch_size = 5;
-	printf("Please input number of requests (users): ");
-	//scanf("%d", &number_of_requests);
-	printf("Please input batch size: ");
-	//scanf("%d", &batch_size);
+    printf("Please input number of requests (users): ");
+    //scanf("%d", &number_of_requests);
+    printf("Please input batch size: ");
+    //scanf("%d", &batch_size);
 
-	pthread_t threads[number_of_requests];
+    pthread_t threads[number_of_requests];
 
     balancer_init(batch_size);
 
@@ -42,7 +42,7 @@ int main() {
 
     //wait for all users to finish before program exit.
     for (int i = 0; i < number_of_requests; i++)
-        pthread_join(threads[i], NULL);   
+        //pthread_join(threads[i], NULL);   
     
     return 0;
 }
