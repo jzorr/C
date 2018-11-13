@@ -38,9 +38,9 @@ void balancer_init(int batch_size){
     pthread_t thr;
     size_t i = 0;
     for(i = 0; i < batch_size; i++){
-        //pthread_create(&thr, NULL, balancer_set_batch_size(batch_size), NULL); // this one?
+        pthread_create(&thr, NULL, balancer_set_batch_size, batch_size); // this one?
         //---OR---
-        pthread_create(&thr, NULL, balancer_add_job, NULL); // or this one?
+        //pthread_create(&thr, NULL, balancer_add_job, NULL); // or this one?
     }
     
     // initialize the batch size
@@ -116,6 +116,9 @@ void balancer_add_job(int user_id, int data, int* data_return){
     
     //add all the jobs until the linked list is full
     
+    // release temp from malloc
+    free(temp);
+    
     //unlock the mutex so it can add another node
     pthread_mutex_unlock(&lock);
     
@@ -131,6 +134,7 @@ void balancer_set_batch_size(int size){
     //TODO - % count with size passed to determine when to call for new instance
     if ((job_counter%size) == 0){
         //create new instance
+        host_init();
     }
         
     
