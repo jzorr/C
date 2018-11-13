@@ -6,6 +6,7 @@
  * @version 1.0
  */
 
+#include <pthread.h>
 #include "InstanceHost.h"
 
 struct job_node; //defined in LoadBalancer
@@ -37,5 +38,6 @@ void host_shutdown(){
 */
 void host_request_instance(struct job_node* batch){
     printf("LoadBalancer: Received batch and spinning up new instance.\n");
+    //traverse the batch passed from head-to-tail
     
 }
