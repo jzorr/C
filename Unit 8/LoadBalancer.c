@@ -1,19 +1,7 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 /**
  * C file of functions to simulate a load balancer.
  * 
- * @author Orr
+ * @author Orr, Acuna
  * @version 1.0
  */
 
@@ -22,40 +10,17 @@
 #include "InstanceHost.h"
 
 //structure to track jobs as they are created. serves as a linked list node.
-struct job_node {
+struct batch {
     int user_id;          //unique id of user
     int data;             //input data provided by user.
     int* data_result;     //pointer to place in global memory to store result.
                           //negative one (-1) means result not computed.
-    struct job_node* next;//pointer to the next job in a list of jobs.
+    struct batch* next;//pointer to the next job in a list of jobs.
 };
 
+//Creating a Node:
+typedef struct batch* job; //Define node as pointer of data type struct LinkedList
 
-//function to create a new node
- job_node createNode(){
-     job_node temp; // declare a node
-     temp = (job_node)malloc(sizeof(batch_size)); // allocate memory using malloc()
-     temp->next = NULL;// make next point to NULL
-     return temp;//return the new node
- }
-
-//function to add a node to the LinkedList -- tied into balancer_add_job
-job_node addNode(job_node head, int value){
-    job_node temp,p;// declare two nodes temp and p
-    temp = createNode();//createNode will return a new node with data = value and next pointing to NULL.
-    temp->data = value; // add element's value to data part of node
-    if(head == NULL){
-        head = temp;     //when linked list is empty
-    }
-    else{
-        p  = head;//assign head to p 
-        while(p->next != NULL){
-            p = p->next;//traverse the list until p is the last node.The last node always points to NULL.
-        }
-        p->next = temp;//Point the previous last node to the new node created.
-    }
-    return head;
-}
 //----------------------------------------------------------------------------------------------------------------------
 //forward declarations for (public) functions
 
@@ -73,7 +38,7 @@ void balancer_init(int batch_size){
     pthread_t thr;
     size_t i = 0;
     for(i = 0; i < batch_size; i++){
-        pthread_create(&thr, NULL, balancer_set_batch_size(batch_size), NULL); // this one?
+        //pthread_create(&thr, NULL, balancer_set_batch_size(batch_size), NULL); // this one?
         //---OR---
         pthread_create(&thr, NULL, balancer_add_job, NULL); // or this one?
     }
@@ -96,6 +61,19 @@ void balancer_shutdown(){
     host_shutdown();
 }
 
+
+/**
+ * Helper function to create a new job
+ * 
+ */
+void createJob(){
+   job temp; // declare a job
+   temp = (job)malloc(sizeof(batch)); // allocate memory using malloc()
+   temp.next = NULL;// make next point to NULL
+}
+
+int job_counter = 0;  //variable to keep track of the total job count
+job head = NULL; //set to NULL initially which will be changed once one is added
 /**
  * Adds a job to the load balancer. If enough jobs have been added to fill a
  * batch, will request a new instance from InstanceHost. When job is complete,
@@ -105,9 +83,6 @@ void balancer_shutdown(){
  * @param data the data the user wants to process.
  * @param data_return a pointer to a location to store the result of processing.
  */
-
-int job_counter = 0; 
-
 void balancer_add_job(int user_id, int data, int* data_return){
     //TODO
     // lock the mutex so it can only add one at a time
@@ -116,16 +91,25 @@ void balancer_add_job(int user_id, int data, int* data_return){
     //print the job and what it is requesting
     printf("LoadBalancer: Received new job from user #%d to process data = #%d and store it at %p.\n", user_id, data, data_return);
     
-    //create new job_node for the batch linked list
-    job_node job;
-    job = (job_node)malloc(sizeof(struct job_node)); // allocate memory using malloc()
-    job.user_id = user_id;
-    job.data = data;
-    job.data_result = data_return;
-    job.next = NULL; //pointer to the next node in the linked list set to NULL
-    
+    //create new job for the batch linked list
+    job temp,p;// declare two nodes temp and p
+    temp = createJob();//createJob will create a new node and next pointing to NULL.
+    temp.user_id = user_id;
+    temp.data = data;
+    temp.data_result = data_return;
+    if(head == NULL){
+        head = temp;     //when batch is empty
+    }
+    else{
+        p = head;//assign head to p 
+        while(p.next != NULL){
+            p = p.next;//traverse the list until p is the last node.The last node always points to NULL.
+        }
+        p.next = temp;//Point the previous last node to the new node created.
+    }
+
     //call 'host_request_instance' if the job count is = the set size required for a new instance
-    host_request_instance();
+    host_request_instance(job);//TODO
     
     //increment job_counter and use % to determine when to call balancer_set_batch_size
     job_counter++;

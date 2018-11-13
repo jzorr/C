@@ -9,7 +9,7 @@
 #include <pthread.h>
 #include "InstanceHost.h"
 
-struct job_node; //defined in LoadBalancer
+struct batch; //defined in LoadBalancer
 
 //forward declarations for (public) functions
 
@@ -30,14 +30,17 @@ void host_shutdown(){
 
 /**
 * Creates a new server instance (i.e., thread) to handle processing the items
-* contained in a batch (i.e., a listed list of job_node). InstanceHost will
+* contained in a batch (i.e., a listed list of batch). InstanceHost will
 * maintain a list of active instances, and if the host is requested to
 * shutdown, ensures that all jobs are completed.
 *
 * @param job_batch_list A list containing the jobs in a batch to process.
 */
-void host_request_instance(struct job_node* batch){
+void host_request_instance(struct batch* batch){
     printf("LoadBalancer: Received batch and spinning up new instance.\n");
     //traverse the batch passed from head-to-tail
+    while(job->next != NULL){
+        job = job->next;
+    }
     
 }
