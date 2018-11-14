@@ -11,6 +11,8 @@
 
 struct batch; //defined in LoadBalancer
 
+pthread_mutex_t lock;
+
 //forward declarations for (public) functions
 
 /**
@@ -26,6 +28,7 @@ void host_init(){
 */
 void host_shutdown(){
     //TODO
+    pthread_mutex_destroy(&lock);
 }
 
 /**
@@ -36,11 +39,23 @@ void host_shutdown(){
 *
 * @param job_batch_list A list containing the jobs in a batch to process.
 */
-void host_request_instance(struct batch* batch){
+void host_request_instance(struct job_node* batch){
     printf("LoadBalancer: Received batch and spinning up new instance.\n");
     //traverse the batch passed from head-to-tail
-    while(job->next != NULL){
-        job = job->next;
+    while(batch->next != NULL){
+        pthread_t thr;
+        pthread_create(&thr, NULL, host_request_instance, NULL); // might need to change the last NULL
+        batch = batch->next;
     }
+
+    //create mutex to ensure only one list is added at a time
+    pthread_mutex_init(&lock);
+    
+//    //TODO - create a thread for each job within the batch
+//    pthread_t thr;
+//    size_t i = 0;
+//    for(i = 0; i < batch_size; i++){
+//        pthread_create(&thr, NULL, host_request_instance, NULL); // might need to change the last NULL
+//    }
     
 }

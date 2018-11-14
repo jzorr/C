@@ -10,16 +10,19 @@
 #include "InstanceHost.h"
 
 //structure to track jobs as they are created. serves as a linked list node.
-struct batch {
+struct job_node {
     int user_id;          //unique id of user
     int data;             //input data provided by user.
     int* data_result;     //pointer to place in global memory to store result.
                           //negative one (-1) means result not computed.
-    struct batch* next;//pointer to the next job in a list of jobs.
+    struct job_node* next;//pointer to the next job in a list of jobs.
 };
 
 //Creating a Node:
-typedef struct batch* job; //Define node as pointer of data type struct LinkedList
+typedef struct job_node* job; //Define node as pointer of data type struct job_node
+
+//global for batch_size
+int batch_size;
 
 //----------------------------------------------------------------------------------------------------------------------
 //forward declarations for (public) functions
@@ -31,6 +34,9 @@ typedef struct batch* job; //Define node as pointer of data type struct LinkedLi
 pthread_mutex_t lock;
 void balancer_init(int batch_size){
     
+    // initialize the batch size
+    balancer_set_batch_size(batch_size);
+    
     //create mutex to ensure only one list is added at a time
     pthread_mutex_init(&lock);
     
@@ -40,15 +46,11 @@ void balancer_init(int batch_size){
     for(i = 0; i < batch_size; i++){
         pthread_create(&thr, NULL, balancer_set_batch_size, batch_size); // this one?
         //---OR---
-        //pthread_create(&thr, NULL, balancer_add_job, NULL); // or this one?
+        pthread_create(&thr, NULL, balancer_add_job, NULL); // or this one?
     }
-    
-    // initialize the batch size
-    balancer_set_batch_size(batch_size);
     
     //initialize the host instance
     host_init();
-    
 }
 
 /**
@@ -61,19 +63,6 @@ void balancer_shutdown(){
     host_shutdown();
 }
 
-
-/**
- * Helper function to create a new job
- * 
- */
-void createJob(){
-   job temp; // declare a job
-   temp = (job)malloc(sizeof(batch)); // allocate memory using malloc()
-   temp.next = NULL;// make next point to NULL
-}
-
-int job_counter = 0;  //variable to keep track of the total job count
-job head = NULL; //set to NULL initially which will be changed once one is added
 /**
  * Adds a job to the load balancer. If enough jobs have been added to fill a
  * batch, will request a new instance from InstanceHost. When job is complete,
@@ -91,53 +80,60 @@ void balancer_add_job(int user_id, int data, int* data_return){
     //print the job and what it is requesting
     printf("LoadBalancer: Received new job from user #%d to process data = #%d and store it at %p.\n", user_id, data, data_return);
     
-    //create new job for the batch linked list
-    job temp,p;// declare two nodes temp and p
-    temp = createJob();//createJob will create a new node and next pointing to NULL.
-    temp.user_id = user_id;
-    temp.data = data;
-    temp.data_result = data_return;
+    //create new job_node for the batch linked list
+    job_node* head = NULL;
+    head = (job_node*)malloc(sizeof(job_node));
+    
+    //check if the malloc worked
     if(head == NULL){
-        head = temp;     //when batch is empty
+        return 1;
     }
-    else{
-        p = head;//assign head to p 
-        while(p.next != NULL){
-            p = p.next;//traverse the list until p is the last node.The last node always points to NULL.
-        }
-        p.next = temp;//Point the previous last node to the new node created.
-    }
+    
+    head->data = data;
+    head->user_id = user_id;
+    head->data_result = data_return;
+    head->next = NULL;
 
+    // how long is the list 
+    int list_size = getCount(head);
+    
     //call 'host_request_instance' if the job count is = the set size required for a new instance
-    host_request_instance(job);//TODO
-    
-    //increment job_counter and use % to determine when to call balancer_set_batch_size
-    job_counter++;
-    
-    //add all the jobs until the linked list is full
+    if(list_size == batch_size){
+            host_request_instance(head);
+    }
     
     // release temp from malloc
-    free(temp);
+    free(head);
     
     //unlock the mutex so it can add another node
     pthread_mutex_unlock(&lock);
-    
 }
 
 /**
- * Sets the size of the batch. That is, how many jobs much be collected before a
+ * Counts the nodes in the linked list
+ *
+ * @param head the job_node linked list
+ */
+int getCount(struct job_node* head){
+    int count = 0; //initialize count
+    struct job_node* current = head; //initialize current
+    while(current != NULL){
+        count++;
+        current = current->next;
+    }
+    return count;
+}
+
+
+/**
+ * Sets the size of the batch. That is, how many jobs must be collected before a
  * server instance requested.
  * 
  * @param size the new batch size.
  */
 void balancer_set_batch_size(int size){
     //TODO - % count with size passed to determine when to call for new instance
-    if ((job_counter%size) == 0){
-        //create new instance
-        host_init();
-    }
-        
-    
+    batch_size = size;    
 }
 
 
