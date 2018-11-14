@@ -23,14 +23,15 @@ void* simulate_user_request(void* user_id);
 int main() {
     int number_of_requests = 10;
     int batch_size = 5;
-    printf("Please input number of requests (users): ");
+    //printf("Please input number of requests (users): \n");
     //scanf("%d", &number_of_requests);
-    printf("Please input batch size: ");
+    //printf("Please input batch size: \n");
     //scanf("%d", &batch_size);
 
     pthread_t threads[number_of_requests];
 
     balancer_init(batch_size);
+    printf("balancer_init(batch_size); \n");
 
     //create number_of_requests number of users that want to square a number.
     for (int i = 0; i < number_of_requests; i++) {
@@ -42,7 +43,7 @@ int main() {
 
     //wait for all users to finish before program exit.
     for (int i = 0; i < number_of_requests; i++)
-        //pthread_join(threads[i], NULL);   
+        pthread_join(threads[i], NULL);   
     
     return 0;
 }
@@ -55,6 +56,8 @@ int main() {
  * @return 
  */
 void* simulate_user_request(void* user_id) {
+    
+    //printf("simulate_user_request \n");
     int data = rand() % 100;
     int* result = (int*)malloc(sizeof(int));
     *result = -1;
