@@ -38,12 +38,8 @@ void host_shutdown(){
 
 void* functionA(void* arg){
     pthread_mutex_lock(lock1);
-   
-    printf("batch->data = %d \n", (int)arg); 
-            
     pthread_mutex_unlock(lock1);
-    pthread_exit(NULL);
-    
+    pthread_exit(NULL);    
 }
 
 /**
@@ -64,7 +60,7 @@ void host_request_instance(struct job_node* batch){
     //create mutex to ensure only one list is added at a time
     pthread_mutex_init(lock1, NULL);
     
-    if(batch->next != NULL){  
+    while(batch->next != NULL){  
         printf("batch->next = %d\n", (int)batch->next);
         pthread_create(&thr, NULL, &functionA, (void*)batch->data); //(int*)batch->data)
         pthread_join(thr, NULL);          

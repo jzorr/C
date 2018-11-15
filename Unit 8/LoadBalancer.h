@@ -11,13 +11,13 @@
 #include "InstanceHost.h"
 
 //structure to track jobs as they are created. serves as list node.
-struct job_node {
+typedef struct job_node {
     int user_id;          //unique id of user
     int data;             //input data provided by user.
     int* data_result;     //pointer to place in global memory to store result.
                           //negative one (-1) means result not computed.
     struct job_node* next;//pointer to the next job in a list of jobs.
-};
+} job_node;
 
 //forward declarations for (public) functions
 

@@ -35,7 +35,7 @@ int main() {
 
     //create number_of_requests number of users that want to square a number.
     for (int i = 0; i < number_of_requests; i++) {
-        printf("creating: %d\n", i);
+        //printf("creating: %d\n", i);
         pthread_create(&threads[i], NULL, &simulate_user_request, (void*)i);
     }
 
@@ -48,6 +48,7 @@ int main() {
     return 0;
 }
 
+//int user_id[];
 /**
  * Simulates a user requesting work to be done a server. Expected to be run in a
  * thread.
@@ -61,6 +62,7 @@ void* simulate_user_request(void* user_id) {
     int data = rand() % 100;
     int* result = (int*)malloc(sizeof(int));
     *result = -1;
+    //printf("result = %d\n", *result);
     
     //make the thread wait to simulate differences in when user requests occur.
     int ms = (rand() % 100) * 1000;
@@ -70,9 +72,13 @@ void* simulate_user_request(void* user_id) {
     
     //make request to balance to complete job and wait for it's completion.
     balancer_add_job((int)user_id, data, result);
+    //printf("result = %d\n", *result);
+
     while(*result == -1);  //busy waiting, bad but simple
     
     printf("User #%d: Received result from data=%d as result=%d.\n", (int)user_id, data, *result);
+    printf("-END-\n");
+    //printf("--------------------------------------------------------------------------------------\n");
     
     free(result);
     

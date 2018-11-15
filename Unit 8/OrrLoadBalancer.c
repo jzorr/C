@@ -13,9 +13,10 @@
 //Creating a jon_node from the struct defined in LoadBalancer.h
 job_node* job; //Define node as pointer of data type struct job_node
 
-//global for batch_size
-int batch_size;
 
+//global for batch_size
+int batch_size, i = 0;
+//job_node* arr[batch_size];
 //----------------------------------------------------------------------------------------------------------------------
 //forward declarations for (public) functions
 
@@ -48,15 +49,15 @@ void balancer_shutdown(){
  *
  * @param head the job_node linked list
  */
-//int getCount(struct job_node* head){
-//    int count = 0; //initialize count
-//    struct job_node* current = head; //initialize current
-//    while(current != NULL){
-//        count++;
-//        current = current->next;
-//    }
-//    return count;
-//}
+int getCount(struct job_node* head){
+    int count = 0; //initialize count
+    struct job_node* current = head; //initialize current
+    while(current != NULL){
+        count++;
+        current = current->next;
+    }
+    return count;
+}
 
 int job_count = 0;
 /**
@@ -73,8 +74,11 @@ void balancer_add_job(int user_id, int data, int* data_return){
     // lock the mutex so it can only add one at a time
     pthread_mutex_lock(&lock);
     
+    
+    
     //print the job and what it is requesting
     printf("LoadBalancer: Received new job from user #%d to process data = #%d and store it at %p.\n", user_id, data, data_return);
+    printf("-------------------------------------------------------------------\n");
     
     //create new job_node for the batch linked list
     job_node* head = NULL;
@@ -84,26 +88,41 @@ void balancer_add_job(int user_id, int data, int* data_return){
     if(head == NULL){
         //return 1;
     }
-    
+    *data_return = data*data;
     head->user_id = user_id;
-    printf("head->user_id = %d\n", head->user_id);
+    //printf("head->user_id = %d\n", head->user_id);
     head->data = data;
-    printf("head->data = %d\n", head->data);
+    //printf("head->data = %d\n", head->data);
+    //printf("data^2 = %d\n", new_data);
     head->data_result = data_return;
-    printf("head->data_result = %d\n", *head->data_result);
+    //printf("head->data_result = %d\n", *data_return);
     head->next = NULL;
-    printf("head->next = %d\n", (int)head->next);
+    //printf("head->next = %d\n", (int)head->next);
 
+//    //add this job_node to arr[]
+//    arr[i]->user_id = user_id;
+//    //printf("head->user_id = %d\n", head->user_id);
+//    arr[i]->data = data;
+//    //printf("head->data = %d\n", head->data);
+//    //printf("data^2 = %d\n", new_data);
+//    arr[i]->data_result = data_return;
+//    //printf("head->data_result = %d\n", *data_return);
+//    arr[i]->next = NULL;
+//    //printf("head->next = %d\n", (int)head->next); 
+    
+    
+    
+    
     // how long is the list 
     job_count++;
     //int list_size = getCount(head);
-    printf("job_count = %d\n", job_count);
+    //printf("job_count = %d\n", job_count);
     
     //call 'host_request_instance' if the job count is = the set size required for a new instance
     //if(list_size == batch_size){
-    if((job_count % batch_size) == 0){
+    if(( job_count % batch_size) == 0){ //job_count
         printf("\n");
-        printf("head->next = %d\n", (int)head->next);
+        //printf("head->next = %d\n", (int)head->next);
         host_request_instance(head);
     }
     
@@ -114,6 +133,7 @@ void balancer_add_job(int user_id, int data, int* data_return){
     
     // release temp from malloc
     free(head);
+    i++;
 }
 
 
